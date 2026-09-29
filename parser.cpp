@@ -1,31 +1,35 @@
 #include <stdio.h>
+#include <string.h>
+
 
 #define RED "\x1B[31m"
 #define GREEN "\033[0;32m"
 #define YELLOW  "\x1B[33m"
 #define RESET "\x1B[0m"
 
-bool InputMakeNewStack();
-int InputCapacity();
-bool InputIsPush();
-bool InputIsPop();
-int InputPushValue();
+typedef int StackElem_t;
 
-void ClearBuf();
-
-bool InputMakeNewStack()
+typedef struct
 {
-    printf("Enter 1 to create new stack\n");
-    char inputc = 0;
-    inputc = (char)getchar();
+    int size;
+    int capacity;
+    StackElem_t *data;
+    StackElem_t poison_v;
+}Stack_t;
 
-    if(inputc != '\n')
-        ClearBuf();
+enum ERRORS {noErr,
+    stackNoInit,
+    stackOverflow,
+    stackUnderflow};
 
-    if(inputc == '1')
-        return 1;
-    return 0;
-}
+int InputOption(Stack_t);
+void ReadInput(char *read);
+
+int InputCapacity();
+int InputPushValue();
+void ClearBuf();
+void PrintGOrR(bool b);
+
 
 int InputCapacity()
 {
@@ -39,34 +43,6 @@ int InputCapacity()
             return capacity;
         printf(RED "Capacity must be positive\n" RESET);
     }
-}
-
-bool InputIsPush()
-{
-    printf("Enter 1 to push element to stack\n");
-    char inputc = 0;
-    inputc = (char)getchar();
-
-    if(inputc != '\n')
-        ClearBuf();
-
-    if(inputc == '1')
-        return 1;
-    return 0;
-}
-
-bool InputIsPop()
-{
-    printf("Enter 1 to pop element from stack\n");
-    char inputc = 0;
-    inputc = (char)getchar();
-
-    if(inputc != '\n')
-        ClearBuf();
-
-    if(inputc == '1')
-        return 1;
-    return 0;
 }
 
 int InputPushValue()
@@ -89,4 +65,83 @@ void ClearBuf()
     char inputc = 0;
     while(inputc != '\n')
         inputc = (char)getchar();
+}
+
+int InputOption(Stack_t stk)
+{
+    printf(GREEN);
+    printf( "Enter >init< to initialise stack\n");
+    bool b1 = stk.data == NULL;
+    bool b2 = stk.capacity == stk.size;
+    bool b3 = stk.size == 0;
+
+    PrintGOrR(!(b1 || b2));
+    printf( "Enter >push< to push element\n");
+
+    PrintGOrR(!(b1 || b3));
+    printf("Enter >pop< to pop element\n");
+
+    PrintGOrR(!b1);
+    printf("Enter >destroy< to debosh\n" RESET);
+
+    while(true)
+    {
+        char read[8] = {};
+        ReadInput(read);
+
+        if     (strcmp(read, "init") == 0)
+            return 1;
+
+        else if(strcmp(read, "push") == 0)
+        {
+            if(stk.data == NULL)
+                printf(RED "Cant push without init\n" RESET);
+            else
+                return 2; 
+        }
+
+        else if(strcmp(read, "pop" ) == 0)
+        {
+            if(stk.data == NULL)
+                printf(RED "Cant pop without init\n" RESET);
+            else
+                return 3; 
+        }
+
+        else if(strcmp(read, "destroy" ) == 0)
+        {
+            if(stk.data == NULL)
+                printf(RED "Cant destroy without init\n" RESET);
+            else
+                return 4; 
+        }
+
+        printf(RED "Invalid input\n" RESET);
+    }
+}
+
+void ReadInput(char *read)
+{
+    char inputc = (char)getchar();
+    int i = 0;
+    while(inputc != '\n' && i < 7)
+    {
+        read[i++] = inputc;
+        inputc = (char)getchar();
+    }
+    read[i] = '\0';
+    if(inputc != '\n')
+    {
+        while(inputc != '\n')
+            inputc = (char)getchar();
+        printf(RED "Too long input\n" RESET);
+    }
+}
+
+void PrintGOrR(bool b)
+{
+    if(b)
+        printf(GREEN);
+    else
+        printf(RED);
 }

@@ -10,17 +10,17 @@ main()
     printf(RESET);
     while(true)   
     {
-        
-        if(InputMakeNewStack())
-        {
-            stk.capacity = InputCapacity();
+        int inputOption = InputOption(stk);
+        if(inputOption == 1)
             StackInit(&stk);
-        }
 
-        if(InputIsPush())
+        if(inputOption == 2)
             StackPush(&stk, InputPushValue());
 
-        if(InputIsPop())
+        if(inputOption == 3)
             StackPop(&stk);
+
+        if(inputOption == 4)
+            StackDestroy(&stk);
     }
 }
