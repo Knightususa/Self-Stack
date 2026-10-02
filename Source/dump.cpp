@@ -24,9 +24,11 @@ bool IsValuePoisonD(Stack_t stk, StackElem_t value)
 int StackDumpCID(Stack_t *stk)
 {
     printf(YELLOW "DEBUG |Index| Pointer          | Value\n");
-    printf(YELLOW "DEBUG |" CYAN "     | %p | capacity = %i\n", &(stk->capacity), stk->capacity);
-    printf(YELLOW "DEBUG |" CYAN "     | %p | size     = %i\n", &(stk->size), stk->size);
-    printf(YELLOW "DEBUG |" CYAN "     | %p | poison_v = %" PRINTF_T "\n", &(stk->poison_v), stk->poison_v);
+    printf(YELLOW "DEBUG |" CYAN "     | %p | capacity  = %i\n", &(stk->capacity), stk->capacity);
+    printf(YELLOW "DEBUG |" CYAN "     | %p | size      = %i\n", &(stk->size), stk->size);
+    printf(YELLOW "DEBUG |" CYAN "     | %p | poison_v  = %" PRINTF_T "\n", &(stk->poison_v), stk->poison_v);
+    printf(YELLOW "DEBUG |" CYAN "     | %p | hashData  = %llu\n", &(stk->hashData), stk->hashData);
+    printf(YELLOW "DEBUG |" CYAN "     | %p | hashStack = %llu\n", &(stk->hashStack), stk->hashStack);
     printf(YELLOW "DEBUG |" CYAN "-----|------------------|----------------------\n");
     for (int i = 0; i < stk->capacity; i++)
     {

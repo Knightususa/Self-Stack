@@ -12,6 +12,8 @@
 #define CYAN    "\033[36m"
 #define WHITE   "\033[37m"
 
+const unsigned long long ArbusDefault = 228337446555;
+
 
 typedef struct
 {
@@ -76,8 +78,13 @@ typedef struct
 {
     int size;
     int capacity;
+    unsigned long long arbusL; //LEFT CANARY
     StackElem_t *data;
+    unsigned long long arbusR; //RIGHT CANARY
+    unsigned long long arbusDefault;//DEFAULT VALUE OF CANARY
+    unsigned long long hashData;
     StackElem_t poison_v;
+    unsigned long long hashStack;
 }Stack_t;
 
 enum ERRORS
@@ -87,7 +94,11 @@ enum ERRORS
     stackOverflow,
     stackUnderflow,
     stackNoResize,
-    dataPointerNull
+    dataPointerNull,
+    leftCanaryKilled,
+    rightCanaryKilled,
+    hashDataIncorrect,
+    hashStackIncorrect
 };
 
 enum OPTIONS
