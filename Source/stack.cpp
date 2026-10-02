@@ -16,11 +16,11 @@ enum ERRORS StackInit(Stack_t *stk)
         printf(RED "\nCan't create stack(\n\n" RESET);
         return stackNoInit;
     }
+    
     CANARY_PROTECTION(stk->canaryL = (unsigned long long *) stk->data;
                       *stk->canaryL = stk->canaryDefault;
                       stk->data    = stk->data + 8;
                       MakeCanaryEnd(stk);)
-
     
     stk->size = 0;
 
@@ -271,8 +271,8 @@ void MakeCanaryEnd(Stack_t *stk)
     stk->canaryR = (unsigned long long *)&(stk->data[stk->capacity]);
     for(int i = 0; i < 8; i++)
     {
-        unsigned char mask = (unsigned char)(((stk->canaryDefault) >> 8 * (8 - i)) & 0xFF);
-        stk->canaryR[i] = mask;
+        unsigned char mask = (unsigned char)(((stk->canaryDefault) >> 8 * i) & 0xFF);
+        *(unsigned char *) ((size_t)(stk->canaryR) + i) = mask;
     }
 })//end CANARY_PROTECTION
 

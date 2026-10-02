@@ -13,7 +13,7 @@
 #define WHITE   "\033[37m"
 
 const unsigned long long ArbusDefault = 0xDEDC0CA1;
-const unsigned long long CanaryDefault = 0xDEDC0CA1;
+const unsigned long long CanaryDefault = 0xDEDC0CA1DEDC0CA1;
 
 
 typedef struct
