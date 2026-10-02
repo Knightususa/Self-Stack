@@ -23,6 +23,7 @@ Self Stack/
 Для сборки проекта используйте компилятор g++.
 В зависимости от желаемого типа данных стека, добавьте соответствующий флаг:
 
+### Тип
 int (по умолчанию): без флагов
 
 double: -DSTACK_T_DOUBLE
@@ -30,7 +31,15 @@ double: -DSTACK_T_DOUBLE
 char: -DSTACK_T_CHAR
 
 struct: -DSTACK_T_STRUCT
-(содержит int char double)
+(содержит int, char, double)
+
+### Дебаг режим и режимы защиты
+-DON_CANARY_PROTECTION
+включить канарейки в данные стэка и в сам стэк
+
+-DON_HASH_PROTECTION
+включить хэширование данных стэка и самого стэка
+
 
 ## Пример компиляции
 ```bash
@@ -48,7 +57,7 @@ g++ .\Source\main.cpp .\Source\parser.cpp .\Source\stack.cpp .\Source\dump.cpp -
 ```
 Для отладки (включение assert)
 ```bash
-g++ .\Source\main.cpp .\Source\parser.cpp .\Source\stack.cpp .\Source\dump.cpp -DISDEBUG -o main.exe
+g++ .\Source\main.cpp .\Source\parser.cpp .\Source\stack.cpp .\Source\dump.cpp -DON_DEBUG -o main.exe
 ```
 ## Использование
 После запуска программа предложит ввести команды:
