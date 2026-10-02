@@ -24,11 +24,22 @@ bool IsValuePoisonD(Stack_t stk, StackElem_t value)
 int StackDumpCID(Stack_t *stk)
 {
     printf(YELLOW "DEBUG |Index| Pointer          | Value\n");
+    CANARY_PROTECTION(
+    printf(YELLOW "DEBUG |" CYAN "     | %p | arbusL  = %X\n", &(stk->arbusL), stk->arbusL);
+    printf(YELLOW "DEBUG |" CYAN "     | %p | arbusR  = %X\n", &(stk->arbusR), stk->arbusR);
+    printf(YELLOW "DEBUG |" CYAN "     | %p | arbusDefault  = %X\n", &(stk->arbusDefault), stk->arbusDefault);
+
+    printf(YELLOW "DEBUG |" CYAN "     | %p | canaryL  = %X\n", &(stk->canaryL), stk->canaryL);
+    printf(YELLOW "DEBUG |" CYAN "     | %p | canaryR  = %X\n", &(stk->canaryR), stk->canaryR);
+    printf(YELLOW "DEBUG |" CYAN "     | %p | canaryDefault  = %X\n", &(stk->canaryDefault), stk->canaryDefault);    
+    )
     printf(YELLOW "DEBUG |" CYAN "     | %p | capacity  = %i\n", &(stk->capacity), stk->capacity);
     printf(YELLOW "DEBUG |" CYAN "     | %p | size      = %i\n", &(stk->size), stk->size);
     printf(YELLOW "DEBUG |" CYAN "     | %p | poison_v  = %" PRINTF_T "\n", &(stk->poison_v), stk->poison_v);
-    printf(YELLOW "DEBUG |" CYAN "     | %p | hashData  = %llu\n", &(stk->hashData), stk->hashData);
-    printf(YELLOW "DEBUG |" CYAN "     | %p | hashStack = %llu\n", &(stk->hashStack), stk->hashStack);
+
+    HASH_PROTECTION(printf(YELLOW "DEBUG |" CYAN "     | %p | hashData  = %llu\n", &(stk->hashData), stk->hashData);
+                    printf(YELLOW "DEBUG |" CYAN "     | %p | hashStack = %llu\n", &(stk->hashStack), stk->hashStack);)
+
     printf(YELLOW "DEBUG |" CYAN "-----|------------------|----------------------\n");
     for (int i = 0; i < stk->capacity; i++)
     {
@@ -80,11 +91,25 @@ bool IsValuePoisonS(Stack_t stk, StackElem_t value)
 int StackDumpS(Stack_t *stk)
 {
     printf(YELLOW "DEBUG |Index| Pointer          | Value\n");
+    CANARY_PROTECTION(
+    printf(YELLOW "DEBUG |" CYAN "     | %p | arbusL  = %X\n", &(stk->arbusL), stk->arbusL);
+    printf(YELLOW "DEBUG |" CYAN "     | %p | arbusR  = %X\n", &(stk->arbusR), stk->arbusR);
+    printf(YELLOW "DEBUG |" CYAN "     | %p | arbusDefault  = %X\n", &(stk->arbusDefault), stk->arbusDefault);
+
+    printf(YELLOW "DEBUG |" CYAN "     | %p | canaryL  = %X\n", stk->canaryL, *stk->canaryL);
+    printf(YELLOW "DEBUG |" CYAN "     | %p | canaryR  = %X\n", stk->canaryR, *stk->canaryR);
+    printf(YELLOW "DEBUG |" CYAN "     | %p | canaryDefault  = %X\n", &(stk->canaryDefault), stk->canaryDefault);
+    )
+    
     printf(YELLOW "DEBUG |" CYAN "     | %p | capacity = %i\n", &(stk->capacity), stk->capacity);
     printf(YELLOW "DEBUG |" CYAN "     | %p | size     = %i\n", &(stk->size), stk->size);
     printf(YELLOW "DEBUG |" CYAN "     | %p | poison_v.int_v    = %i\n",  &(stk->poison_v.int_v), stk->poison_v.int_v);
     printf(YELLOW "DEBUG |" CYAN "     | %p | poison_v.char_v   = %c\n",  &(stk->poison_v.char_v), stk->poison_v.char_v);
     printf(YELLOW "DEBUG |" CYAN "     | %p | poison_v.double_v = %lg\n", &(stk->poison_v.double_v), stk->poison_v.double_v);
+
+    HASH_PROTECTION(printf(YELLOW "DEBUG |" CYAN "     | %p | hashData  = %llu\n", &(stk->hashData), stk->hashData);
+                    printf(YELLOW "DEBUG |" CYAN "     | %p | hashStack = %llu\n", &(stk->hashStack), stk->hashStack);)
+
     printf(YELLOW "DEBUG |" CYAN "-----|------------------|----------------------\n");
     for (int i = 0; i < stk->capacity; i++)
     {

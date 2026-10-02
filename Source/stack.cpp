@@ -7,22 +7,28 @@ enum ERRORS StackInit(Stack_t *stk)
         printf(RED "\nCapacity must be > 0\n" RESET);
         return stackNoInit;
     }
-    stk->arbusL =  stk->arbusDefault;
-    stk->arbusR = stk->arbusDefault;
-    stk->data = (StackElem_t *)calloc(stk->capacity, sizeof(StackElem_t));
-
+    CANARY_PROTECTION(stk->arbusL =  stk->arbusDefault;
+                      stk->arbusR = stk->arbusDefault;)
+    stk->data = (StackElem_t *)malloc((stk->capacity * sizeof(StackElem_t)) + 16);
+    
     if (stk->data == NULL)
     {
         printf(RED "\nCan't create stack(\n\n" RESET);
         return stackNoInit;
     }
+    CANARY_PROTECTION(stk->canaryL = (unsigned long long *) stk->data;
+                      *stk->canaryL = stk->canaryDefault;
+                      stk->data    = stk->data + 8;
+                      MakeCanaryEnd(stk);)
+
+    
     stk->size = 0;
 
     for (int i = 0; i < stk->capacity; i++)
         stk->data[i] = stk->poison_v;
 
-    stk->hashData = CalculateHashData(*stk);
-    stk->hashStack = CalculateHashStack(*stk);
+    HASH_PROTECTION(stk->hashData = CalculateHashData(*stk);
+                    stk->hashStack = CalculateHashStack(*stk);)
 
     printf(MAGENTA "\nCreate and initialize stack successfully\n\n" RESET);
     yaissert(StackDump(stk));
@@ -50,8 +56,8 @@ enum ERRORS StackDestroy(Stack_t *stk)
     stk->size = -1;
     stk->capacity = -1;
     
-    stk->hashData = CalculateHashData(*stk);
-    stk->hashStack = CalculateHashStack(*stk);
+    HASH_PROTECTION(stk->hashData = CalculateHashData(*stk);
+                    stk->hashStack = CalculateHashStack(*stk);)
 
     printf(MAGENTA "\nDestroy stack successfully\n\n" RESET);
     return noErr;
@@ -78,8 +84,8 @@ enum ERRORS StackPush(Stack_t *stk, StackElem_t elem)
 
     stk->data[stk->size++] = elem;
     
-    stk->hashData = CalculateHashData(*stk);
-    stk->hashStack = CalculateHashStack(*stk);
+    HASH_PROTECTION(stk->hashData = CalculateHashData(*stk);
+                    stk->hashStack = CalculateHashStack(*stk);)
     printf(MAGENTA "\nSuccessfully pushed\n\n" RESET);
         
     yaissert(StackDump(stk));
@@ -109,8 +115,8 @@ enum ERRORS StackPop(Stack_t *stk)
     stk->size--;
     stk->data[stk->size] = stk->poison_v;
     
-    stk->hashData = CalculateHashData(*stk);
-    stk->hashStack = CalculateHashStack(*stk);
+    HASH_PROTECTION(stk->hashData = CalculateHashData(*stk);
+                    stk->hashStack = CalculateHashStack(*stk);)
 
     printf(MAGENTA "\nSuccessfully poped\n\n" RESET);
 
@@ -138,8 +144,8 @@ enum ERRORS ResizeUp(Stack_t *stk)
     for(int i = cap; i < cap * 2; i++)
         stk->data[i] = stk->poison_v;
 
-    stk->hashData = CalculateHashData(*stk);
-    stk->hashStack = CalculateHashStack(*stk);
+    HASH_PROTECTION(stk->hashData = CalculateHashData(*stk);
+                    stk->hashStack = CalculateHashStack(*stk);)
 
     printf(MAGENTA "\nResize up stack\n\n" RESET);
     return noErr;
@@ -160,8 +166,8 @@ enum ERRORS ResizeDown(Stack_t *stk)
     stk->data = (StackElem_t *) dataNew;
     stk->capacity /= 2;
 
-    stk->hashData = CalculateHashData(*stk);
-    stk->hashStack = CalculateHashStack(*stk);
+    HASH_PROTECTION(stk->hashData = CalculateHashData(*stk);
+                    stk->hashStack = CalculateHashStack(*stk);)
 
     printf(MAGENTA "\nResize down stack\n\n" RESET);
     return noErr;
@@ -220,18 +226,31 @@ enum ERRORS CheckStack(Stack_t stk)
         return dataPointerNull;
     }
 
+    CANARY_PROTECTION(
+    else if(*stk.canaryL != stk.canaryDefault)
+    {
+        printf(RED "\nLeft canary in data is killed(value is edit)" RESET);
+        return leftCanaryKilled;
+    }
+
+    else if(*stk.canaryR != stk.canaryDefault)
+    {
+        printf(RED "\nRight canary in data is killed(value is edit)" RESET);
+        return rightCanaryKilled;
+    }
+
     else if(stk.arbusL != stk.arbusDefault)
     {
-        printf(RED "\nLeft canary is killed(value is edit)" RESET);
+        printf(RED "\nLeft canary in stack is killed(value is edit)" RESET);
         return leftCanaryKilled;
     }
 
     else if(stk.arbusR != stk.arbusDefault)
     {
-        printf(RED "\nRight canary is killed(value is edit)" RESET);
+        printf(RED "\nRight canary in stack is killed(value is edit)" RESET);
         return rightCanaryKilled;
-    }
-
+    })//end CANARY_PROTECTION
+    HASH_PROTECTION(
     else if(stk.hashData != CalculateHashData(stk))
     {
         printf(RED "\nHash of data incorrect, data may be edited" RESET);
@@ -242,10 +261,20 @@ enum ERRORS CheckStack(Stack_t stk)
     {
         printf(RED "\nHash of stack incorrect, stack may be edited" RESET);
         return hashStackIncorrect;
-    }
-
+    })//end HASH_PROTECTION
     return noErr;
 }
+
+CANARY_PROTECTION(
+void MakeCanaryEnd(Stack_t *stk)
+{
+    stk->canaryR = (unsigned long long *)&(stk->data[stk->capacity]);
+    for(int i = 0; i < 8; i++)
+    {
+        unsigned char mask = (unsigned char)(((stk->canaryDefault) >> 8 * (8 - i)) & 0xFF);
+        stk->canaryR[i] = mask;
+    }
+})//end CANARY_PROTECTION
 
 
 //-----------------------------------------------------------
@@ -253,9 +282,10 @@ enum ERRORS CheckStack(Stack_t stk)
 //-----------------------------------------------------------
 
 #ifndef STACK_T_STRUCT
+HASH_PROTECTION(
 unsigned long long CalculateHashData(Stack_t stk)
 {
-    unsigned long long hash = 0;
+    unsigned long long hash = 5381;
     for(int i = 0; i < stk.capacity; i++)
     {
         hash = (hash << 5) + hash;
@@ -266,7 +296,7 @@ unsigned long long CalculateHashData(Stack_t stk)
 
 unsigned long long CalculateHashStack(Stack_t stk)
 {
-    unsigned long long hash = 0;
+    unsigned long long hash = 5381;
 
     hash += (unsigned long long)stk.arbusDefault;
     hash = (hash << 5) + hash;
@@ -293,6 +323,7 @@ unsigned long long CalculateHashStack(Stack_t stk)
     
     return hash;
 }
+)//END HASH_PROTECTION
 #endif
 //end #ifndef STACK_T_STRUCT
 
@@ -303,9 +334,10 @@ unsigned long long CalculateHashStack(Stack_t stk)
 
 
 #ifdef STACK_T_STRUCT
+HASH_PROTECTION(
 unsigned long long CalculateHashData(Stack_t stk)
 {
-    unsigned long long hash = 0;
+    unsigned long long hash = 5381;
     for(int i = 0; i < stk.capacity; i++)
     {
         hash = (hash << 5) + hash;
@@ -318,7 +350,7 @@ unsigned long long CalculateHashData(Stack_t stk)
 
 unsigned long long CalculateHashStack(Stack_t stk)
 {
-    unsigned long long hash = 0;
+    unsigned long long hash = 5381;
 
     hash += (unsigned long long)stk.arbusDefault;
     hash = (hash << 5) + hash;
@@ -351,5 +383,6 @@ unsigned long long CalculateHashStack(Stack_t stk)
     
     return hash;
 }
+)//END HASH_PROTECTION
 #endif
 //end #ifdef STACK_T_STRUCT

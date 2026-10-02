@@ -29,8 +29,10 @@ enum ERRORS ResizeDown(Stack_t *stack);
 
 enum ERRORS CheckStack(Stack_t stk);
 
-unsigned long long CalculateHashData(Stack_t stk);
-unsigned long long CalculateHashStack(Stack_t stk);
+CANARY_PROTECTION(void MakeCanaryEnd(Stack_t *stk);)
+
+HASH_PROTECTION(unsigned long long CalculateHashData(Stack_t stk);
+                unsigned long long CalculateHashStack(Stack_t stk);)
 
 
 #endif

@@ -12,7 +12,8 @@
 #define CYAN    "\033[36m"
 #define WHITE   "\033[37m"
 
-const unsigned long long ArbusDefault = 0xDEDC0CA1DEDC0CA1;
+const unsigned long long ArbusDefault = 0xDEDC0CA1;
+const unsigned long long CanaryDefault = 0xDEDC0CA1;
 
 
 typedef struct
@@ -55,13 +56,12 @@ typedef int StackElem_t;
 #define IsValuePoison IsValuePoisonCI
 #define PRINTF_T "i"
 #define TEXT_T_VALUE "int"
-
 #endif
 //end STACK_T_DOUBLE or STACK_T_CHAR or STACK_T_STRUCT or else(INT)
 
 
 
-#ifndef ISDEBUG
+#ifdef ON_DEBUG
 #define yaissert(usl)                                                                                                  \
     if (!(usl))                                                                                                        \
     {                                                                                                                  \
@@ -72,19 +72,35 @@ typedef int StackElem_t;
 #define yaissert(usl)
 #endif
 
+#ifdef ON_HASH_PROTECTION
+#define HASH_PROTECTION(...) __VA_ARGS__
+#else
+#define HASH_PROTECTION(...)
+#endif
+
+
+#ifdef ON_CANARY_PROTECTION
+#define CANARY_PROTECTION(...) __VA_ARGS__
+#else
+#define CANARY_PROTECTION(...)
+#endif
+
 
 
 typedef struct
 {
+    CANARY_PROTECTION(unsigned long long arbusL; //LEFT CANARY
+                      unsigned long long arbusDefault;)//DEFAULT VALUE OF CANARY
     int size;
     int capacity;
-    unsigned long long arbusL; //LEFT CANARY
     StackElem_t *data;
-    unsigned long long arbusR; //RIGHT CANARY
-    unsigned long long arbusDefault;//DEFAULT VALUE OF CANARY
-    unsigned long long hashData;
     StackElem_t poison_v;
-    unsigned long long hashStack;
+    CANARY_PROTECTION(unsigned long long *canaryL;
+                      unsigned long long *canaryR;
+                      unsigned long long canaryDefault;)
+    HASH_PROTECTION(unsigned long long hashData;
+        unsigned long long hashStack;)
+    CANARY_PROTECTION(unsigned long long arbusR;) //RIGHT CANARY
 }Stack_t;
 
 enum ERRORS
@@ -95,10 +111,10 @@ enum ERRORS
     stackUnderflow,
     stackNoResize,
     dataPointerNull,
-    leftCanaryKilled,
-    rightCanaryKilled,
-    hashDataIncorrect,
-    hashStackIncorrect
+    CANARY_PROTECTION(leftCanaryKilled,
+                      rightCanaryKilled,)
+    HASH_PROTECTION(hashDataIncorrect,
+                    hashStackIncorrect)
 };
 
 enum OPTIONS

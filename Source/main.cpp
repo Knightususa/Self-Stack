@@ -4,15 +4,21 @@ main()
 {
     Stack_t stk =
     {
+        CANARY_PROTECTION(.arbusL = 0,
+                          .arbusDefault = ArbusDefault,)
         .size = -1,
         .capacity = -1,
-        .arbusL = 0,
         .data = NULL,
-        .arbusR = 0,
-        .arbusDefault = ArbusDefault,
-        .hashData = 0,
-        .poison_v = POISON_V,
-        .hashStack = 0
+        .poison_v = POISON_V
+        CANARY_PROTECTION(,
+                          .canaryL = NULL,
+                          .canaryR = NULL,
+                          .canaryDefault = CanaryDefault)
+        HASH_PROTECTION(,
+                        .hashData = 0,
+                        .hashStack = 0)
+        CANARY_PROTECTION(,
+                          .arbusR = 0,)
     };
 
     while(true)   
